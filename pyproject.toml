@@ -1,0 +1,10 @@
+[project]
+name = "iceberg"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "pyarrow>=21.0.0",
+    "pyiceberg[sql-sqlite]>=0.9.1",
+]

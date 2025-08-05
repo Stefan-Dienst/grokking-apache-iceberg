@@ -1,0 +1,11 @@
+id,name,alias,powers,birth_year,active
+1,Scott Summers,Cyclops,"Optic blasts, team leadership",1970,TRUE
+2,Jean Grey,Phoenix,"Telepathy, telekinesis, Phoenix Force",1972,TRUE
+3,Logan,Wolverine,"Regeneration, adamantium claws",1880,TRUE
+4,Ororo Munroe,Storm,"Weather control, flight",1975,TRUE
+5,Hank McCoy,Beast,"Super strength, agility, genius intellect",1968,FALSE
+6,Kurt Wagner,Nightcrawler,"Teleportation, wall crawling",1978,TRUE
+7,Pietro Maximoff,Quicksilver,"Super speed",1980,FALSE
+8,Charles Xavier,Professor X,"Telepathy, mind control",1940,FALSE
+9,Kitty Pryde,Shadowcat,"Phasing through objects",1985,TRUE
+10,Anna Marie,Rogue,"Power absorption",1979,TRUE
