@@ -1,0 +1,65 @@
+services:
+  postgres:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: hive
+      POSTGRES_PASSWORD: hive
+      POSTGRES_DB: metastore
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "hive", "-d", "metastore"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '5432:5432'
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio
+    command: server /data
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - '9000:9000'
+    volumes:
+      - minio-data:/data
+
+  minio-init:
+    image: minio/mc
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "mc alias set local http://minio:9000 admin password && mc mb -p local/warehouse"
+
+  hive-metastore:
+    image: apache/hive:standalone-metastore-4.1.0
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      # Check available env variables here: https://github.com/apache/hive/blob/master/packaging/src/docker/entrypoint.sh
+      DB_DRIVER: postgres
+      HADOOP_CLASSPATH: "/opt/hadoop/share/hadoop/tools/lib/*"
+    ports:
+      - '9083:9083'
+    volumes:
+      - ./core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
+      # Check available parameters here: https://hive.apache.org/docs/latest/admin/adminmanual-metastore-3-0-administration/
+      - ./metastore-site.xml:/opt/hive/conf/metastore-site.xml:ro
+      # Ran `wget https://jdbc.postgresql.org/download/postgresql-42.7.3.jar`
+      - ./postgresql-42.7.3.jar:/opt/hive/lib/postgresql.jar
+
+volumes:
+  pg-data:
+  minio-data:
