@@ -1,12 +1,14 @@
 from pyiceberg.catalog import load_catalog
 
+from iceberg.config import DATA_CATALOG_DB, WAREHOUSE_PATH
+
 warehouse_path = "/tmp/warehouse"
 catalog = load_catalog(
     "marvel",  # Name of the catalog. One can store multiple catalogs in the same database.
     **{
         "type": "sql",  # We will use the SQLCatalog type.
-        "uri": f"sqlite:///{warehouse_path}/pyiceberg_catalog.db",  # Gives the location of the sqlite database.
-        "warehouse": f"file://{warehouse_path}",  # Give the path were the metadata and data of the actual tables will be stored.
+        "uri": f"sqlite:///{WAREHOUSE_PATH}/{DATA_CATALOG_DB}",  # Gives the location of the sqlite database.
+        "warehouse": f"file://{WAREHOUSE_PATH}",  # Give the path were the metadata and data of the actual tables will be stored.
     },
 )
 
