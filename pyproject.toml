@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "pandas>=2.3.3",
     "pyarrow>=21.0.0",
     "pyiceberg[sql-sqlite]>=0.9.1",
     "pyspark>=4.1.2",
