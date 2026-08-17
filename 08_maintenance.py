@@ -5,38 +5,55 @@
 # Also, depending on what write mode is used, much redundant data may be written and stored indefinitely.
 # Down the line, just normally using Iceberg tables can lead to shortcomings like wasted storage, reading many small data files or cumbersome scanning through many metadata files.
 # To combat this Iceberg supplies a set of maintenance operations.
-
+from pyarrow.csv import read_csv
+from pyiceberg.catalog import load_catalog
 from pyspark.sql import SparkSession
 
-from iceberg.config import DATA_CATALOG_DB, WAREHOUSE_PATH
-
-# Create SparkSession with JDBC catalog pointing to SQLite
-spark = (
-    SparkSession.builder.appName("IcebergWithSQLiteCatalog")
-    # Iceberg packages
-    .config(
-        "spark.jars.packages",
-        "org.apache.iceberg:iceberg-spark-runtime-4.0_2.13:1.10.0,"
-        "org.xerial:sqlite-jdbc:3.46.0.0",
-    )  # SQLite JDBC driver
-    .config(
-        "spark.sql.extensions",
-        "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
-    )
-    # Configure catalog to use JDBC (SQLite)
-    .config("spark.sql.catalog.marvel", "org.apache.iceberg.spark.SparkCatalog")
-    .config("spark.sql.catalog.marvel.type", "jdbc")
-    .config(
-        "spark.sql.catalog.marvel.uri",
-        f"jdbc:sqlite:///{WAREHOUSE_PATH}/{DATA_CATALOG_DB}",
-    )
-    .config("spark.sql.catalog.marvel.warehouse", f"file://{WAREHOUSE_PATH}")
-    .config("spark.sql.catalog.marvel.jdbc.useUnicode", "true")
-    .config("spark.sql.catalog.marvel.jdbc.verifyServerCertificate", "false")
-    .getOrCreate()
+from iceberg.setup import (
+    connect_with_spark,
+    create_marvel_xmen_namespace,
+    load_sqlite_catalog,
+    setup_warehouse,
 )
 
-spark.sparkContext.setLogLevel("WARN")
+# Base on previous state:
+setup_warehouse()
+
+catalog = load_sqlite_catalog()
+create_marvel_xmen_namespace(catalog)
+
+
+df = read_csv("./x-men.csv")
+
+table = catalog.create_table(
+    identifier="xmen.characters",
+    schema=df.schema,
+)
+
+table.append(df)
+
+table.manage_snapshots().create_tag(
+    snapshot_id=table.current_snapshot().snapshot_id, tag_name="v1"
+).commit()
+
+df = read_csv("./x-men2.csv")
+table.append(df)
+
+table.manage_snapshots().create_branch(
+    snapshot_id=table.current_snapshot().snapshot_id, branch_name="dev"
+).commit()
+
+# And then only append two more x-men to this branch
+df = read_csv("./x-men4.csv")
+table.append(df, branch="dev")
+dev_snapshot_id = table.refs()["dev"].snapshot_id
+audit_scan = table.scan(snapshot_id=dev_snapshot_id).to_arrow()
+table.manage_snapshots().set_current_snapshot(ref_name="dev").commit()
+
+
+spark = connect_with_spark()
+
+# New stuff starts here
 
 # The first thing we can do is reduce the number of metadata files.
 # As stated before, one of the big advantage of Iceberg is that it reduces the number of API calls needed for planning a scan by containing multiple file paths in a single manifest file.
@@ -119,7 +136,7 @@ spark.sql(
 
 # Here we expire all snapshots older than a future date (so all), but want retain atleast one.
 spark.sql(
-    """ CALL marvel.system.expire_snapshots('xmen.characters', TIMESTAMP '2026-08-18 00:00:00.000', 1); """
+    """ CALL marvel.system.expire_snapshots('xmen.characters', TIMESTAMP '2044-08-18 00:00:00.000', 1); """
 ).show()
 
 # +------------------------+-----------------------------------+-----------------------------------+----------------------------+----------------------------+------------------------------+

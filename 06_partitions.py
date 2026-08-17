@@ -11,30 +11,16 @@ from pyiceberg.transforms import IdentityTransform, TruncateTransform
 # Apache Iceberg tables needs to be registed in a catalog to be usable. We will be using the
 # SQLCatalog, which is backed by sqlite and accessed via sqlalchemy.
 from iceberg.config import DATA_CATALOG_DB, WAREHOUSE_PATH
-
-if os.path.exists(WAREHOUSE_PATH):
-    shutil.rmtree(WAREHOUSE_PATH)
-os.mkdir(WAREHOUSE_PATH)
-
-catalog = load_catalog(
-    "marvel",  # Name of the catalog. One can store multiple catalogs in the same database.
-    **{
-        "type": "sql",  # We will use the SQLCatalog type.
-        "uri": f"sqlite:///{WAREHOUSE_PATH}/{DATA_CATALOG_DB}",  # Gives the location of the sqlite database.
-        "warehouse": f"file://{WAREHOUSE_PATH}",  # Give the path were the metadata and data of the actual tables will be stored.
-    },
+from iceberg.setup import (
+    create_marvel_xmen_namespace,
+    load_sqlite_catalog,
+    setup_warehouse,
 )
 
+setup_warehouse()
 
-catalog.create_namespace_if_not_exists(
-    "xmen",
-    properties={
-        "description": "Mutant superheroes with powers",
-        "owner": "professor_x",
-        "location": f"file://{WAREHOUSE_PATH}/xmen",
-    },
-)
-
+catalog = load_sqlite_catalog()
+create_marvel_xmen_namespace(catalog)
 
 df = read_csv("./x-men4.csv")
 

@@ -1,22 +1,14 @@
+from pyarrow.csv import read_csv
 from pyiceberg.catalog import load_catalog
 
 from iceberg.config import DATA_CATALOG_DB, WAREHOUSE_PATH
+from iceberg.setup import load_sqlite_catalog, setup_base_table
 
-warehouse_path = "/tmp/warehouse"
-catalog = load_catalog(
-    "marvel",  # Name of the catalog. One can store multiple catalogs in the same database.
-    **{
-        "type": "sql",  # We will use the SQLCatalog type.
-        "uri": f"sqlite:///{WAREHOUSE_PATH}/{DATA_CATALOG_DB}",  # Gives the location of the sqlite database.
-        "warehouse": f"file://{WAREHOUSE_PATH}",  # Give the path were the metadata and data of the actual tables will be stored.
-    },
-)
-
-from pyarrow.csv import read_csv
+setup_base_table()
+catalog = load_sqlite_catalog()
 
 # Now let's add three more rows to our table and see what happens.
 df = read_csv("./x-men2.csv")
-
 
 table = catalog.load_table(identifier="xmen.characters")
 

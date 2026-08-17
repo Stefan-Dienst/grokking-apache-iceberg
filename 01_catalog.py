@@ -3,14 +3,14 @@ import shutil
 
 from pyiceberg.catalog import load_catalog
 
-# Apache Iceberg tables needs to be registed in a catalog to be usable. We will be using the
-# SQLCatalog, which is backed by sqlite and accessed via sqlalchemy.
 from iceberg.config import DATA_CATALOG_DB, WAREHOUSE_PATH
 
 if os.path.exists(WAREHOUSE_PATH):
     shutil.rmtree(WAREHOUSE_PATH)
 os.mkdir(WAREHOUSE_PATH)
 
+# Apache Iceberg tables needs to be registed in a catalog to be usable. We will be using the
+# SQLCatalog, which is backed by sqlite and accessed via sqlalchemy.
 catalog = load_catalog(
     "marvel",  # Name of the catalog. One can store multiple catalogs in the same database.
     **{

@@ -1,34 +1,10 @@
 from pyspark.sql import SparkSession
 
 from iceberg.config import DATA_CATALOG_DB, WAREHOUSE_PATH
+from iceberg.setup import connect_with_spark, setup_base_table
 
-# Create SparkSession with JDBC catalog pointing to SQLite
-spark = (
-    SparkSession.builder.appName("IcebergWithSQLiteCatalog")
-    # Iceberg packages
-    .config(
-        "spark.jars.packages",
-        "org.apache.iceberg:iceberg-spark-runtime-4.0_2.13:1.10.0,"
-        "org.xerial:sqlite-jdbc:3.46.0.0",
-    )  # SQLite JDBC driver
-    .config(
-        "spark.sql.extensions",
-        "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
-    )
-    # Configure catalog to use JDBC (SQLite)
-    .config("spark.sql.catalog.marvel", "org.apache.iceberg.spark.SparkCatalog")
-    .config("spark.sql.catalog.marvel.type", "jdbc")
-    .config(
-        "spark.sql.catalog.marvel.uri",
-        f"jdbc:sqlite:///{WAREHOUSE_PATH}/{DATA_CATALOG_DB}",
-    )
-    .config("spark.sql.catalog.marvel.warehouse", f"file://{WAREHOUSE_PATH}")
-    .config("spark.sql.catalog.marvel.jdbc.useUnicode", "true")
-    .config("spark.sql.catalog.marvel.jdbc.verifyServerCertificate", "false")
-    .getOrCreate()
-)
-
-spark.sparkContext.setLogLevel("WARN")
+setup_base_table()
+spark = connect_with_spark()
 
 # List namespaces
 namespaces = spark.sql("SHOW NAMESPACES IN marvel").collect()

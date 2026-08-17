@@ -1,6 +1,13 @@
 from pyspark.sql import SparkSession
 
 from iceberg.config import DATA_CATALOG_DB, WAREHOUSE_PATH
+from iceberg.setup import (
+    connect_with_spark,
+    recreate_base_table_with_spark,
+    setup_base_table,
+)
+
+setup_base_table()
 
 # Create SparkSession with JDBC catalog pointing to SQLite
 spark = (
@@ -34,7 +41,7 @@ spark.sparkContext.setLogLevel("WARN")
 namespaces = spark.sql("SHOW NAMESPACES IN marvel").collect()
 print("\nNamespaces in catalog:")
 for ns in namespaces:
-    print(f"  - {ns.namespace}")
+    print(f"{ns.namespace}")
 
 # Load the table
 print("\n" + "=" * 80)
@@ -42,10 +49,10 @@ print("Loading table marvel.xmen.characters")
 print("=" * 80)
 
 # Now delete Cyclopse by id
-# spark.sql("""
-#     DELETE FROM marvel.xmen.characters
-#     WHERE id = 1
-# """)
+spark.sql("""
+    DELETE FROM marvel.xmen.characters
+    WHERE id = 1
+""")
 
 # What happened?
 # Show files in graph.
@@ -267,36 +274,38 @@ print("=" * 80)
 # In total the table now consists of two data files and has 12 x-men.
 
 # In the spirit of upcoming timetravel, let's rewind our last operation and change the mode for wrtiting deletes from copy-on-write, to merge-on-read.
+recreate_base_table_with_spark(spark)
+
 # This can be done via
-# spark.sql("""ALTER TABLE marvel.xmen.characters SET TBLPROPERTIES (
-#     'write.delete.mode' = 'merge-on-read'
-#     )
-#          """)
+spark.sql("""ALTER TABLE marvel.xmen.characters SET TBLPROPERTIES (
+    'write.delete.mode' = 'merge-on-read'
+    )
+         """)
 
-# df = spark.sql("SHOW TBLPROPERTIES marvel.xmen.characters")
-# df.show()
+df = spark.sql("SHOW TBLPROPERTIES marvel.xmen.characters")
+df.show()
 
-# # +-------------------+-------------------+
-# # |                key|              value|
-# # +-------------------+-------------------+
-# # |current-snapshot-id|5279280090035835473|
-# # |             format|    iceberg/parquet|
-# # |     format-version|                  2|
-# # |  write.delete.mode|      merge-on-read|
-# # +-------------------+-------------------+
+# +-------------------+-------------------+
+# |                key|              value|
+# +-------------------+-------------------+
+# |current-snapshot-id|5279280090035835473|
+# |             format|    iceberg/parquet|
+# |     format-version|                  2|
+# |  write.delete.mode|      merge-on-read|
+# +-------------------+-------------------+
 
 
-# # Now let's delete Cyclopse again.
-# spark.sql("""
-#     DELETE FROM marvel.xmen.characters
-#     WHERE id = 1
-# """)
+# Now let's delete Cyclopse again.
+spark.sql("""
+    DELETE FROM marvel.xmen.characters
+    WHERE id = 1
+""")
 
-# # Check if delete went through
-# df = spark.sql("SELECT * FROM marvel.xmen.characters")
-# df.show(truncate=False)
+# Check if delete went through
+df = spark.sql("SELECT * FROM marvel.xmen.characters")
+df.show(truncate=False)
 
-# print(f"\nTotal records: {df.count()}")
+print(f"\nTotal records: {df.count()}")
 
 # Now several things have happend.
 # First, by changing the `write.delete.mode` we created a new snapshot which reflects this change
@@ -320,6 +329,7 @@ print("=" * 80)
 # This tells the reader to remove the record at postition 0 from the file `00000-0-<uuid-1>.parquet.parquet`, i.e. cyclopse.
 
 # Now let's again reverse time to cover a different aspect of Apache Iceberg.
+recreate_base_table_with_spark(spark)
 # As previousely stated the core of Apache Iceberg is the specification, but there are different version of this specification.
 # When writing this blog post v1, v2 and v3 have been released, while v4 is in active developement.
 # But here care is to be taken, because not every implementation supports all versions of the spec.
