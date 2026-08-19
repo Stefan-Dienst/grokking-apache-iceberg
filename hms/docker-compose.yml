@@ -11,13 +11,13 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - '5432:5432'
+      - "5432:5432"
     volumes:
       - pg-data:/var/lib/postgresql/data
 
   minio:
     image: minio/minio
-    command: server /data
+    command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: admin
       MINIO_ROOT_PASSWORD: password
@@ -27,7 +27,9 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - '9000:9000'
+      - "9000:9000"
+      - "9001:9001"
+
     volumes:
       - minio-data:/data
 
@@ -52,7 +54,7 @@ services:
       DB_DRIVER: postgres
       HADOOP_CLASSPATH: "/opt/hadoop/share/hadoop/tools/lib/*"
     ports:
-      - '9083:9083'
+      - "9083:9083"
     volumes:
       - ./core-site.xml:/opt/hadoop/etc/hadoop/core-site.xml:ro
       # Check available parameters here: https://hive.apache.org/docs/latest/admin/adminmanual-metastore-3-0-administration/

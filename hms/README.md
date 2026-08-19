@@ -18,4 +18,5 @@ Then PySpark is used to create a database and a table and insert data into the l
  1. `docker compose up -d`
  2. `uv run spark.py`
  3. Inspect the underlying data of the HMS by connecting to `localhost:5432` with your tool of choice.
+ 4. Inspect the object storage using `localhost:9001`
 
