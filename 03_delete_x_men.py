@@ -44,11 +44,6 @@ print("\nNamespaces in catalog:")
 for ns in namespaces:
     print(f"{ns.namespace}")
 
-# Load the table
-print("\n" + "=" * 80)
-print("Loading table marvel.xmen.characters")
-print("=" * 80)
-
 # Now delete Cyclopse by id
 spark.sql("""
     DELETE FROM marvel.xmen.characters
