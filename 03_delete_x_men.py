@@ -2,6 +2,7 @@ from pyspark.sql import SparkSession
 
 from iceberg.config import DATA_CATALOG_DB, WAREHOUSE_PATH
 from iceberg.setup import (
+    clear_files,
     connect_with_spark,
     recreate_base_table_with_spark,
     setup_base_table,
@@ -62,163 +63,165 @@ spark.sql("""
 
 # New metadata file
 # {
-#  "format-version" : 2,
-#  "table-uuid" : "18f3b09b-e372-4485-9fc1-9efb0d707ced",
-#  "location" : "file:///tmp/warehouse/xmen/characters",
-#  "last-sequence-number" : 3,
-#  "last-updated-ms" : 1785960290085,
-#  "last-column-id" : 6,
-#  "current-schema-id" : 0,
-#  "schemas" : [ {
-#    "type" : "struct",
-#    "schema-id" : 0,
-#    "fields" : [ {
-#      "id" : 1,
-#      "name" : "id",
-#      "required" : false,
-#      "type" : "long"
-#    }, {
-#      "id" : 2,
-#      "name" : "name",
-#      "required" : false,
-#      "type" : "string"
-#    }, {
-#      "id" : 3,
-#      "name" : "alias",
-#      "required" : false,
-#      "type" : "string"
-#    }, {
-#      "id" : 4,
-#      "name" : "powers",
-#      "required" : false,
-#      "type" : "string"
-#    }, {
-#      "id" : 5,
-#      "name" : "birth_year",
-#      "required" : false,
-#      "type" : "long"
-#    }, {
-#      "id" : 6,
-#      "name" : "active",
-#      "required" : false,
-#      "type" : "boolean"
-#    } ]
-#  } ],
-#  "default-spec-id" : 0,
-#  "partition-specs" : [ {
-#    "spec-id" : 0,
-#    "fields" : [ ]
-#  } ],
-#  "last-partition-id" : 999,
-#  "default-sort-order-id" : 0,
-#  "sort-orders" : [ {
-#    "order-id" : 0,
-#    "fields" : [ ]
-#  } ],
-#  "properties" : { },
-#  "current-snapshot-id" : 805341815771319914,
-#  "refs" : {
-#    "main" : {
-#      "snapshot-id" : 805341815771319914,
-#      "type" : "branch"
-#    }
-#  },
-#  "snapshots" : [ {
-#    "sequence-number" : 1,
-#    "snapshot-id" : 6272734660913065949,
-#    "timestamp-ms" : 1785959855556,
-#    "summary" : {
-#      "operation" : "append",
-#      "added-files-size" : "2846",
-#      "added-data-files" : "1",
-#      "added-records" : "10",
-#      "total-data-files" : "1",
-#      "total-delete-files" : "0",
-#      "total-records" : "10",
-#      "total-files-size" : "2846",
-#      "total-position-deletes" : "0",
-#      "total-equality-deletes" : "0"
-#    },
-#    "manifest-list" : "file:///tmp/warehouse/xmen/characters/metadata/snap-6272734660913065949-0-9e1b2748-a8e5-4b09-b74f-a9f78e7d2524.avro",
-#    "schema-id" : 0
-#  }, {
-#    "sequence-number" : 2,
-#    "snapshot-id" : 1589152794795701372,
-#    "parent-snapshot-id" : 6272734660913065949,
-#    "timestamp-ms" : 1785959869920,
-#    "summary" : {
-#      "operation" : "append",
-#      "added-files-size" : "2571",
-#      "added-data-files" : "1",
-#      "added-records" : "3",
-#      "total-data-files" : "2",
-#      "total-delete-files" : "0",
-#      "total-records" : "13",
-#      "total-files-size" : "5417",
-#      "total-position-deletes" : "0",
-#      "total-equality-deletes" : "0"
-#    },
-#    "manifest-list" : "file:///tmp/warehouse/xmen/characters/metadata/snap-1589152794795701372-0-650f881a-a243-44be-a619-71d98da23730.avro",
-#    "schema-id" : 0
-#  }, {
-#    "sequence-number" : 3,
-#    "snapshot-id" : 805341815771319914,
-#    "parent-snapshot-id" : 1589152794795701372,
-#    "timestamp-ms" : 1785960290085,
-#    "summary" : {
-#      "operation" : "overwrite",
-#      "spark.app.id" : "local-1785960282910",
-#      "added-data-files" : "1",
-#      "deleted-data-files" : "1",
-#      "added-records" : "9",
-#      "deleted-records" : "10",
-#      "added-files-size" : "2198",
-#      "removed-files-size" : "2846",
-#      "changed-partition-count" : "1",
-#      "total-records" : "12",
-#      "total-files-size" : "4769",
-#      "total-data-files" : "2",
-#      "total-delete-files" : "0",
-#      "total-position-deletes" : "0",
-#      "total-equality-deletes" : "0"
-#    },
-#    "manifest-list" : "file:/tmp/warehouse/xmen/characters/metadata/snap-805341815771319914-1-6083779d-ac4d-4ae2-af4b-7c212f0f273d.avro",
-#    "schema-id" : 0
-#  } ],
-#  "statistics" : [ ],
-#  "partition-statistics" : [ ],
-#  "snapshot-log" : [ {
-#    "timestamp-ms" : 1785959855556,
-#    "snapshot-id" : 6272734660913065949
-#  }, {
-#    "timestamp-ms" : 1785959869920,
-#    "snapshot-id" : 1589152794795701372
-#  }, {
-#    "timestamp-ms" : 1785960290085,
-#    "snapshot-id" : 805341815771319914
-#  } ],
-#  "metadata-log" : [ {
-#    "timestamp-ms" : 1785959855499,
-#    "metadata-file" : "file:///tmp/warehouse/xmen/characters/metadata/00000-c7f9d101-0e74-4d1d-99b6-0c832a67ca0e.metadata.json"
-#  }, {
-#    "timestamp-ms" : 1785959855556,
-#    "metadata-file" : "file:///tmp/warehouse/xmen/characters/metadata/00001-54766511-b75d-4f7f-b113-e910ed0bf889.metadata.json"
-#  }, {
-#    "timestamp-ms" : 1785959869920,
-#    "metadata-file" : "file:///tmp/warehouse/xmen/characters/metadata/00002-250a384e-624e-4b19-8ab9-7c41ea17d280.metadata.json"
-#  } ]
+#   "format-version": 2,
+#   "table-uuid": "a807ad18-33ec-4b6a-8114-6d2f3ca3c453",
+#   "location": "file:///tmp/warehouse/xmen/characters",
+#   "last-sequence-number": 2,
+#   "last-updated-ms": 1787778790935,
+#   "last-column-id": 6,
+#   "current-schema-id": 0,
+#   "schemas": [
+#     {
+#       "type": "struct",
+#       "schema-id": 0,
+#       "fields": [
+#         {
+#           "id": 1,
+#           "name": "id",
+#           "required": false,
+#           "type": "long"
+#         },
+#         {
+#           "id": 2,
+#           "name": "name",
+#           "required": false,
+#           "type": "string"
+#         },
+#         {
+#           "id": 3,
+#           "name": "alias",
+#           "required": false,
+#           "type": "string"
+#         },
+#         {
+#           "id": 4,
+#           "name": "powers",
+#           "required": false,
+#           "type": "string"
+#         },
+#         {
+#           "id": 5,
+#           "name": "birth_year",
+#           "required": false,
+#           "type": "long"
+#         },
+#         {
+#           "id": 6,
+#           "name": "active",
+#           "required": false,
+#           "type": "boolean"
+#         }
+#       ]
+#     }
+#   ],
+#   "default-spec-id": 0,
+#   "partition-specs": [
+#     {
+#       "spec-id": 0,
+#       "fields": []
+#     }
+#   ],
+#   "last-partition-id": 999,
+#   "default-sort-order-id": 0,
+#   "sort-orders": [
+#     {
+#       "order-id": 0,
+#       "fields": []
+#     }
+#   ],
+#   "properties": {},
+#   "current-snapshot-id": 48153905500596197,
+#   "refs": {
+#     "main": {
+#       "snapshot-id": 48153905500596197,
+#       "type": "branch"
+#     }
+#   },
+#   "snapshots": [
+#     {
+#       "sequence-number": 1,
+#       "snapshot-id": 4175467656960143115,
+#       "timestamp-ms": 1787778778658,
+#       "summary": {
+#         "operation": "append",
+#         "added-files-size": "2870",
+#         "added-data-files": "1",
+#         "added-records": "10",
+#         "total-data-files": "1",
+#         "total-delete-files": "0",
+#         "total-records": "10",
+#         "total-files-size": "2870",
+#         "total-position-deletes": "0",
+#         "total-equality-deletes": "0"
+#       },
+#       "manifest-list": "file:///tmp/warehouse/xmen/characters/metadata/snap-4175467656960143115-0-76707a0f-5022-4187-a511-0abe394103ab.avro",
+#       "schema-id": 0
+#     },
+#     {
+#       "sequence-number": 2,
+#       "snapshot-id": 48153905500596197,
+#       "parent-snapshot-id": 4175467656960143115,
+#       "timestamp-ms": 1787778790935,
+#       "summary": {
+#         "operation": "overwrite",
+#         "spark.app.id": "local-1787778782804",
+#         "added-data-files": "1",
+#         "deleted-data-files": "1",
+#         "added-records": "9",
+#         "deleted-records": "10",
+#         "added-files-size": "2226",
+#         "removed-files-size": "2870",
+#         "changed-partition-count": "1",
+#         "total-records": "9",
+#         "total-files-size": "2226",
+#         "total-data-files": "1",
+#         "total-delete-files": "0",
+#         "total-position-deletes": "0",
+#         "total-equality-deletes": "0",
+#         "engine-version": "4.1.2",
+#         "app-id": "local-1787778782804",
+#         "engine-name": "spark",
+#         "iceberg-version": "Apache Iceberg 1.10.0 (commit 2114bf631e49af532d66e2ce148ee49dd1dd1f1f)"
+#       },
+#       "manifest-list": "file:/tmp/warehouse/xmen/characters/metadata/snap-48153905500596197-1-14d410d5-98cd-49e3-a80d-3202e93f8d0d.avro",
+#       "schema-id": 0
+#     }
+#   ],
+#   "statistics": [],
+#   "partition-statistics": [],
+#   "snapshot-log": [
+#     {
+#       "timestamp-ms": 1787778778658,
+#       "snapshot-id": 4175467656960143115
+#     },
+#     {
+#       "timestamp-ms": 1787778790935,
+#       "snapshot-id": 48153905500596197
+#     }
+#   ],
+#   "metadata-log": [
+#     {
+#       "timestamp-ms": 1787778778605,
+#       "metadata-file": "file:///tmp/warehouse/xmen/characters/metadata/00000-65cc8733-01ef-43f3-ba56-e25982306ae3.metadata.json"
+#     },
+#     {
+#       "timestamp-ms": 1787778778658,
+#       "metadata-file": "file:///tmp/warehouse/xmen/characters/metadata/00001-ac346a6d-de71-4215-abca-b31f62a2bbd7.metadata.json"
+#     }
+#   ]
 # }
+
 
 # Manifest list
 
 # {
-#   "manifest_path": "file:/tmp/warehouse/xmen/characters/metadata/6083779d-ac4d-4ae2-af4b-7c212f0f273d-m1.avro",
-#   "manifest_length": 7024,
+#   "manifest_path": "file:/tmp/warehouse/xmen/characters/metadata/14d410d5-98cd-49e3-a80d-3202e93f8d0d-m1.avro",
+#   "manifest_length": 7373,
 #   "partition_spec_id": 0,
 #   "content": 0,
-#   "sequence_number": 3,
-#   "min_sequence_number": 3,
-#   "added_snapshot_id": 805341815771319914,
+#   "sequence_number": 2,
+#   "min_sequence_number": 2,
+#   "added_snapshot_id": 48153905500596197,
 #   "added_files_count": 1,
 #   "existing_files_count": 0,
 #   "deleted_files_count": 0,
@@ -227,34 +230,17 @@ spark.sql("""
 #   "deleted_rows_count": 0,
 #   "partitions": {
 #     "array": []
-#   }
+#   },
+#   "key_metadata": null
 # }
 # {
-#   "manifest_path": "file:///tmp/warehouse/xmen/characters/metadata/650f881a-a243-44be-a619-71d98da23730-m0.avro",
-#   "manifest_length": 4661,
+#   "manifest_path": "file:/tmp/warehouse/xmen/characters/metadata/14d410d5-98cd-49e3-a80d-3202e93f8d0d-m0.avro",
+#   "manifest_length": 7371,
 #   "partition_spec_id": 0,
 #   "content": 0,
 #   "sequence_number": 2,
 #   "min_sequence_number": 2,
-#   "added_snapshot_id": 1589152794795701372,
-#   "added_files_count": 1,
-#   "existing_files_count": 0,
-#   "deleted_files_count": 0,
-#   "added_rows_count": 3,
-#   "existing_rows_count": 0,
-#   "deleted_rows_count": 0,
-#   "partitions": {
-#     "array": []
-#   }
-# }
-# {
-#   "manifest_path": "file:/tmp/warehouse/xmen/characters/metadata/6083779d-ac4d-4ae2-af4b-7c212f0f273d-m0.avro",
-#   "manifest_length": 7016,
-#   "partition_spec_id": 0,
-#   "content": 0,
-#   "sequence_number": 3,
-#   "min_sequence_number": 3,
-#   "added_snapshot_id": 805341815771319914,
+#   "added_snapshot_id": 48153905500596197,
 #   "added_files_count": 0,
 #   "existing_files_count": 0,
 #   "deleted_files_count": 1,
@@ -263,17 +249,23 @@ spark.sql("""
 #   "deleted_rows_count": 10,
 #   "partitions": {
 #     "array": []
-#   }
+#   },
+#   "key_metadata": null
 # }
 
-# Noter here that the new manifest list actually points to three manigests.
-# One from our uuid-2 operation, which just contains the 3 newly added x-men, which are still part of the table.
-# Second the newly written manifest that points to the old uuid-1 data file, where we added the first 10 x-men.
+# Noter here that the new manifest list points to two manifests.
+# First the newly written manifest that points to the old uuid-1 data file, where we added the first 10 x-men.
 # This one is now marked as deleted, so it will not be considered for the current state of the table.
-# And third, the newly written manifest that points to the uuid-3 data file that contains the first 10 x-men minus Cyclopse, hence 9 remaining x-men.
-# In total the table now consists of two data files and has 12 x-men.
+# Second, the newly written manifest that points to the uuid-2 data file that contains the first 10 x-men minus Cyclopse, hence 9 remaining x-men.
+# In total the table now consists of one data file and has 9 x-men.
+
+# Wait for user input before continuing
+input("Press Enter to continue...")
+
 
 # In the spirit of upcoming timetravel, let's rewind our last operation and change the mode for wrtiting deletes from copy-on-write, to merge-on-read.
+spark.sql("DROP TABLE IF EXISTS marvel.xmen.characters")
+clear_files()
 recreate_base_table_with_spark(spark)
 
 # This can be done via
@@ -281,6 +273,7 @@ spark.sql("""ALTER TABLE marvel.xmen.characters SET TBLPROPERTIES (
     'write.delete.mode' = 'merge-on-read'
     )
          """)
+
 
 df = spark.sql("SHOW TBLPROPERTIES marvel.xmen.characters")
 df.show()
@@ -328,7 +321,12 @@ print(f"\nTotal records: {df.count()}")
 
 # This tells the reader to remove the record at postition 0 from the file `00000-0-<uuid-1>.parquet.parquet`, i.e. cyclopse.
 
+# Wait for user input before continuing
+input("Press Enter to continue...")
+
 # Now let's again reverse time to cover a different aspect of Apache Iceberg.
+spark.sql("DROP TABLE IF EXISTS marvel.xmen.characters")
+clear_files()
 recreate_base_table_with_spark(spark)
 # As previousely stated the core of Apache Iceberg is the specification, but there are different version of this specification.
 # When writing this blog post v1, v2 and v3 have been released, while v4 is in active developement.

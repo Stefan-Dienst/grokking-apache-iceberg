@@ -16,6 +16,18 @@ def setup_warehouse():
     os.mkdir(WAREHOUSE_PATH)
 
 
+def clear_files():
+    table_path = os.path.join(WAREHOUSE_PATH, "xmen", "characters")
+    data_path = os.path.join(table_path, "data")
+
+    if os.path.exists(data_path):
+        shutil.rmtree(data_path)
+
+    metadata_path = os.path.join(table_path, "metadata")
+    if os.path.exists(metadata_path):
+        shutil.rmtree(metadata_path)
+
+
 def load_sqlite_catalog():
     return load_catalog(
         "marvel",  # Name of the catalog. One can store multiple catalogs in the same database.
@@ -56,10 +68,6 @@ def setup_base_table():
 
 
 def recreate_base_table_with_spark(spark):
-    # Drop and recreate table using Spark
-    spark.sql("DROP TABLE IF EXISTS marvel.xmen.characters")
-
-    # Read CSV and create table
     df = (
         spark.read.option("header", "true")
         .option("inferSchema", "true")
