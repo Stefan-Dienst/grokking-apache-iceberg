@@ -48,6 +48,7 @@ INSERT INTO xmen PARTITION (active=true) VALUES
     (6, 'Kurt Wagner', 'Nightcrawler', 'Teleportation, wall crawling', 1978),
     (9, 'Kitty Pryde', 'Shadowcat', 'Phasing through objects', 1985),
     (10, 'Anna Marie', 'Rogue', 'Power absorption', 1979)
+    DISTRIBUTE BY 1  -- Force single file
 """)
 
 spark.sql("""
@@ -55,6 +56,7 @@ INSERT INTO xmen PARTITION (active=false) VALUES
     (5, 'Hank McCoy', 'Beast', 'Super strength, agility, genius intellect', 1968),
     (7, 'Pietro Maximoff', 'Quicksilver', 'Super speed', 1980),
     (8, 'Charles Xavier', 'Professor X', 'Telepathy, mind control', 1940)
+    DISTRIBUTE BY 1
 """)
 
 spark.sql("SELECT * FROM xmen").show()
