@@ -338,7 +338,7 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=21.0.0" },
     { name = "pyiceberg", extras = ["sql-sqlite"], specifier = ">=0.11.1" },
     { name = "pyiceberg-core", specifier = ">=0.10.1" },
-    { name = "pyspark", specifier = "==4.0" },
+    { name = "pyspark", specifier = "==4.1.2" },
 ]
 
 [[package]]
@@ -1195,12 +1195,12 @@ wheels = [
 
 [[package]]
 name = "pyspark"
-version = "4.0.0"
+version = "4.1.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "py4j" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9d/0e/5b38d51f1b1c2618cccfbf35093268665af9a3bdb493e5a3ecd991def633/pyspark-4.0.0.tar.gz", hash = "sha256:38db1b4f6095a080d7605e578d775528990e66dc326311d93e94a71cfc24e5a5", size = 434132212 }
+sdist = { url = "https://files.pythonhosted.org/packages/5e/71/4dd20c69332a2a4bf7ece8a655c9da98e4bd9b6bcea235349c1a00399d57/pyspark-4.1.2.tar.gz", hash = "sha256:fa5d6159f700d0990a07f4f62df1b7449401dccee9cd7d5d6df8957530841602", size = 455428043 }
 
 [[package]]
 name = "python-dateutil"
